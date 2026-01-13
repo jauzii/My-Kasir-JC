@@ -73,7 +73,7 @@
 <div class="navbar">
     <div>Dashboard</div>
     <div>
-        Hai, <b><?= $_SESSION['username']; ?></b> |
+        {{ Auth::user()->name ?? 'Guest' }}
         <a href="logout.php" class="logout">Logout</a>
     </div>
 </div>
