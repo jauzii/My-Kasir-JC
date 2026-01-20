@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\barang; // Pastikan huruf besar/kecil model sesuai (Barang atau barang)
+use App\Models\barang;
 use Illuminate\Http\Request;
 
 class BarangController extends Controller
@@ -17,7 +17,7 @@ class BarangController extends Controller
     {
         $request->validate([
             'NamaProduk' => 'required|string|max:255',
-            'Kategori'   => 'required', // Pastikan spelling 'Kategori' konsisten dengan form
+            'Kategori'   => 'required',
             'HargaBeli'  => 'required|numeric',
             'HargaJual'  => 'required|numeric',
             'Stok'       => 'required|integer'

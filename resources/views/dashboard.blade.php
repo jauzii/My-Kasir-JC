@@ -14,7 +14,7 @@
             background: #f4f6f9;
         }
         .navbar {
-            background: #007bff;
+            background: #138496;
             padding: 15px 20px;
             color: white;
             display: flex;

@@ -9,7 +9,7 @@ Route::get('/', function () {
     return view('login');
 })->name('login');
 
-// Halaman Register (Ini yang sering terlewat)
+// Halaman Register
 Route::get('/register', function () {
     return view('register');
 })->name('register');
@@ -23,7 +23,7 @@ Route::get('/dashboard', function () {
 Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
 Route::post('/barang/simpan', [BarangController::class, 'store'])->name('barang.store');
 
-// Logout (Gunakan POST demi keamanan)
+// Logout
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
