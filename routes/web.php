@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\AuthController;
 
 // Halaman Utama / Login
 Route::get('/', function () {
@@ -22,6 +23,8 @@ Route::get('/dashboard', function () {
 // Halaman Barang
 Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
 Route::post('/barang/simpan', [BarangController::class, 'store'])->name('barang.store');
+Route::put('/barang/{id}', [BarangController::class, 'update'])->name('barang.update');
+Route::delete('/barang/{id}', [BarangController::class, 'destroy'])->name('barang.destroy');
 
 // Logout
 Route::post('/logout', function () {

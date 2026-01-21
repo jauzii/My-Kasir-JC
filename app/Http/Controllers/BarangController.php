@@ -33,4 +33,36 @@ class BarangController extends Controller
 
         return redirect('/barang')->with('success', 'Barang Berhasil Ditambahkan');
     }
+
+    // Method untuk UPDATE barang
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'NamaProduk' => 'required|string|max:255',
+            'Kategori'   => 'required',
+            'HargaBeli'  => 'required|numeric',
+            'HargaJual'  => 'required|numeric',
+            'Stok'       => 'required|integer'
+        ]);
+
+        $barang = barang::findOrFail($id);
+        $barang->update([
+            'NamaProduk' => $request->NamaProduk,
+            'Kategori'   => $request->Kategori,
+            'HargaBeli'  => $request->HargaBeli,
+            'HargaJual'  => $request->HargaJual,
+            'Stok'       => $request->Stok
+        ]);
+
+        return redirect('/barang')->with('success', 'Barang Berhasil Diupdate');
+    }
+
+    // Method untuk DELETE barang
+    public function destroy($id)
+    {
+        $barang = barang::findOrFail($id);
+        $barang->delete();
+
+        return redirect('/barang')->with('success', 'Barang Berhasil Dihapus');
+    }
 }

@@ -1,0 +1,111 @@
+body {
+    background-color: #f4f7f6;
+    font-family: "Poppins", sans-serif;
+}
+
+.main-container {
+    padding-top: 30px;
+    padding-bottom: 50px;
+}
+
+/* Card Styling */
+.custom-card {
+    background: #ffffff;
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Form Modern Styling */
+.form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    margin-left: 5px;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+}
+
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+}
+
+/* Table Styling */
+.table-container {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.table thead {
+    background-color: #f8fafc;
+}
+
+.table thead th {
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 15px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.table tbody td {
+    padding: 15px;
+    vertical-align: middle;
+    color: #334155;
+    font-size: 14px;
+}
+
+/* Button Styling */
+.btn-custom-primary {
+    background-color: #17a2b8;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 500;
+    color: white;
+    transition: 0.3s;
+}
+
+.btn-custom-primary:hover {
+    background-color: #138496;
+    color: white;
+}
+
+.badge-category {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 11px;
+}
+
+/* Alert Styling */
+.alert-success {
+    background-color: #d1fae5;
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
