@@ -2,7 +2,7 @@
     <div class="nav-scroller">
         <!-- Brand -->
         <a class="navbar-brand text-white fw-bold px-4 py-3" href="{{ url('dashboard') }}">
-          Invento
+          JC
         </a>
 
         <!-- Navbar -->
@@ -12,7 +12,7 @@
             <li class="nav-item">
                 <a class="nav-link text-white {{ request()->is('dashboard') ? 'active' : '' }}"
                    href="{{ url('/dashboard') }}">
-                    <i class="bi bi-speedometer2 me-2"></i>
+                    <i class="bi bi-speedometer2 me-2"></i><i class="bi bi-house"></i>
                     Dashboard
                 </a>
             </li>
