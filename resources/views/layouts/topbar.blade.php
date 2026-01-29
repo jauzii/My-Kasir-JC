@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand navbar-dark border-bottom" style="height: 70px; background-color: #0f172a; border-color: rgba(255,255,255,0.1) !important;">
+<nav class="navbar navbar-expand navbar-dark border-bottom fixed-top" style="height: 70px; background-color: #0f172a; border-color: rgba(255,255,255,0.1) !important;">
     <div class="container-fluid px-4">
         
         <a class="navbar-brand d-flex align-items-center fw-bold" href="#">

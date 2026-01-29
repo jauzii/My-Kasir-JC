@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard | Konveksi Cloteh')
+@section('title', 'Dashboard')
 
 @section('content')
 <style>
@@ -26,9 +26,11 @@
     }
 
     .content {
-        padding: 30px;
+        padding: 40px 30px;
+        margin-top: 100px
         max-width: 1200px;
-        margin: 0 auto;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .welcome-section { margin-bottom: 30px; }
@@ -157,7 +159,7 @@
                                             style="width: 35px; height: 35px; font-size: 14px; font-weight: 700;">
                                             {{ strtoupper(substr($b->NamaProduk, 0, 1)) }}
                                         </div>
-                                        {{ strtoupper(substr($b->NamaProduk, 0, 1)) }}
+                                        <span class="text-caoitalive">{{ $b->NamaProduk }}</span>
                                     </div>
                                 </td>
                                 <td class="py-3 align-middle text-muted">

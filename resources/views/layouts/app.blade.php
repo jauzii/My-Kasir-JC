@@ -56,7 +56,7 @@
             padding: 2rem;
         }
 
-        /* Pastikan transisi halus */
+        /* Transisi halus */
         .fa-chevron-down {
             transition: transform 0.3s ease !important;
         }
@@ -73,16 +73,16 @@
             display: flex;
             align-items: center;
             font-size: 15px;
-            /* Gunakan weight yang sama agar teks tidak melebar saat hover */
+            /* Weight yang sama agar teks tidak melebar saat hover */
             font-weight: 500; 
             transition: background-color 0.3s ease, color 0.3s ease;
     
-            /* Gunakan margin dan border transparan sebagai 'cadangan' ruang */
+            /* Margin dan border transparan sebagai 'cadangan' ruang */
             margin: 4px 15px; 
             border-radius: 8px;
             border: 1px solid transparent; 
     
-            /* Pastikan lebar elemen tidak berubah */
+            /* Lebar elemen tidak berubah */
             width: calc(100% - 30px); 
             box-sizing: border-box;
         }
