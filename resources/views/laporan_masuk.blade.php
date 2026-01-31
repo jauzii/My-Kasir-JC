@@ -1,11 +1,18 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.app')
+
+@section('content')
 <div class="container-fluid">
 
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Laporan Arus Stok</h1>
-        <button onclick="window.print()" class="btn btn-sm btn-primary shadow-sm">
-            <i class="fas fa-print fa-sm text-white-50"></i> Cetak Laporan
-        </button>
+        <h1 class="h3 mb-0 text-gray-800">Laporan Barang Masuk</h1>
+        <div class="d-flex gap-2">
+            <form id="exportMasukForm" action="{{ route('laporan.masuk.export') }}" method="GET" style="display:inline">
+                <input type="hidden" name="start_date" value="{{ $startDate }}" />
+                <input type="hidden" name="end_date" value="{{ $endDate }}" />
+                <button type="submit" class="btn btn-sm btn-primary">📥 Export CSV</button>
+            </form>
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">🖨️ Cetak</button>
+        </div>
     </div>
 
     <div class="card shadow mb-4">
@@ -13,7 +20,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Filter Periode</h6>
         </div>
         <div class="card-body">
-            <form action="{{ route('laporan.index') }}" method="GET">
+            <form action="{{ route('laporan.masuk') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <label class="form-label">Dari Tanggal</label>
@@ -44,45 +51,29 @@
                             <th>Nama Barang</th>
                             <th>Kategori</th>
                             <th>Keterangan</th>
-                            <th>Status</th>
                             <th>Jumlah</th>
                         </tr>
                     </thead>
-                    <tbody id="laporan-table-body">
-                        @include('partials.laporan_table_body', ['laporan' => $laporan])
+                    <tbody>
+                        @forelse($masuk as $item)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') : '-' }}</td>
+                            <td>{{ optional($item->barang)->NamaProduk ?? 'Barang Dihapus' }}</td>
+                            <td>{{ optional($item->barang)->Kategori ?? '-' }}</td>
+                            <td>{{ $item->keterangan ?? '-' }}</td>
+                            <td class="font-weight-bold">{{ $item->jumlah ?? '-' }} Pcs</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-3">Tidak ada transaksi masuk pada periode ini.</td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const bodyEl = document.getElementById('laporan-table-body');
-            const startInput = document.querySelector('input[name="start_date"]');
-            const endInput = document.querySelector('input[name="end_date"]');
-
-            async function refreshLaporan() {
-                try {
-                    const params = new URLSearchParams();
-                    if (startInput && startInput.value) params.append('start_date', startInput.value);
-                    if (endInput && endInput.value) params.append('end_date', endInput.value);
-
-                    const endpoint = "{{ route('laporan.refresh') }}";
-                    const res = await fetch(endpoint + '?' + params.toString(), { credentials: 'same-origin' });
-                    if (!res.ok) return;
-                    const html = await res.text();
-                    if (bodyEl) bodyEl.innerHTML = html;
-                } catch (e) {
-                    console.warn('Gagal refresh laporan:', e);
-                }
-            }
-
-            // Refresh segera, lalu tiap 10 detik
-            refreshLaporan();
-            setInterval(refreshLaporan, 10000);
-        });
-    </script>
 
 </div>
 @endsection

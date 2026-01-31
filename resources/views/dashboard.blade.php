@@ -131,7 +131,7 @@
                     <i class="fa-solid fa-arrow-down-long"></i>
                 </div>
             </div>
-            <div class="value">{{ number_format($barangMasuk, 0, ',', '.') }}</div>
+            <div class="value" id="barang-masuk-value">{{ number_format($barangMasuk, 0, ',', '.') }}</div>
             <div class="desc">Total barang masuk hari ini</div>
         </div>
 
@@ -142,9 +142,33 @@
                     <i class="fa-solid fa-arrow-up-long"></i>
                 </div>
             </div>
-            <div class="value">{{ number_format($barangKeluar, 0, ',', '.') }}</div>
+            <div class="value" id="barang-keluar-value">{{ number_format($barangKeluar, 0, ',', '.') }}</div>
             <div class="desc">Transaksi keluar hari ini</div>
         </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const elMasuk = document.getElementById('barang-masuk-value');
+            const elKeluar = document.getElementById('barang-keluar-value');
+
+            async function refreshSummary() {
+                try {
+                    const res = await fetch("{{ route('dashboard.summary') }}", { credentials: 'same-origin' });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    if (elMasuk) elMasuk.textContent = new Intl.NumberFormat('id-ID').format(data.barangMasuk || 0);
+                    if (elKeluar) elKeluar.textContent = new Intl.NumberFormat('id-ID').format(data.barangKeluar || 0);
+                } catch (e) {
+                    console.warn('Gagal memuat ringkasan dashboard:', e);
+                }
+            }
+
+            // Refresh segera, lalu setiap 10 detik
+            refreshSummary();
+            setInterval(refreshSummary, 10000);
+        });
+    </script>
 
         <div class="stat-card">
             <div class="card-header-flex">

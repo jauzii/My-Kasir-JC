@@ -27,15 +27,14 @@ class DashboardController extends Controller
             $totalStok = 0;
         }
 
-        // 2. Barang Masuk (Filter 7 hari terakhir)
+        // 2. Barang Masuk (hitung TOTAL hari ini)
         try {
             if (Schema::hasTable('barang_masuk')) {
-                $barangMasuk = BarangMasuk::whereDate('tanggal_masuk', '>=', Carbon::now()->startOfWeek())
-                    ->sum('jumlah');
+                // Ambil total jumlah barang masuk yang tercatat untuk hari ini
+                $barangMasuk = BarangMasuk::whereDate('tanggal_masuk', Carbon::today())->sum('jumlah');
             } else {
-                // Fallback: jumlah barang yang ditambahkan ke sistem dalam seminggu
-                $barangMasuk = barang::where('created_at', '>=', Carbon::now()->startOfWeek())
-                    ->sum('Stok');
+                // Fallback: jumlah barang yang ditambahkan ke sistem hari ini (jika tidak ada tabel barang_masuk)
+                $barangMasuk = barang::whereDate('created_at', Carbon::today())->sum('Stok');
             }
         } catch (\Exception $e) {
             Log::warning('DashboardController: gagal menghitung barangMasuk: ' . $e->getMessage());
@@ -77,5 +76,30 @@ class DashboardController extends Controller
 
         // Mengirimkan semua variabel ke view 'dashboard'
         return view('dashboard', compact('barang', 'totalStok', 'barangMasuk', 'barangKeluar', 'produkLowStock'));
+    }
+
+    /**
+     * API: Ringkasan singkat untuk dashboard (JSON).
+     * Dipakai oleh polling JS untuk memperbarui angka tanpa reload.
+     */
+    public function summary()
+    {
+        try {
+            $barangMasuk = Schema::hasTable('barang_masuk')
+                ? BarangMasuk::whereDate('tanggal_masuk', Carbon::today())->sum('jumlah')
+                : barang::whereDate('created_at', Carbon::today())->sum('Stok');
+
+            $barangKeluar = Schema::hasTable('barang_keluar')
+                ? BarangKeluar::whereDate('tanggal_keluar', Carbon::today())->sum('jumlah')
+                : 0;
+
+            return response()->json([
+                'barangMasuk' => (int) $barangMasuk,
+                'barangKeluar' => (int) $barangKeluar,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('DashboardController::summary gagal: ' . $e->getMessage());
+            return response()->json(['barangMasuk' => 0, 'barangKeluar' => 0], 500);
+        }
     }
 }

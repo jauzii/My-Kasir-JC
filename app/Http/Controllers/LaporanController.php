@@ -101,4 +101,166 @@ class LaporanController extends Controller
             'endDate' => $endDate
         ]);
     }
+
+    /**
+     * Endpoint: mengembalikan HTML <tbody> yang berisi rows laporan
+     * Dipakai oleh polling JS pada halaman Laporan untuk pembaruan otomatis
+     */
+    public function refresh(Request $request)
+    {
+        // gunakan filter tanggal yang sama seperti index
+        try {
+            $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : Carbon::now()->startOfMonth()->format('Y-m-d');
+        } catch (\Exception $e) {
+            $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        }
+
+        try {
+            $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        } catch (\Exception $e) {
+            $endDate = Carbon::now()->format('Y-m-d');
+        }
+
+        // Ambil data masuk
+        if (Schema::hasTable('barang_masuk')) {
+            try {
+                $dataMasuk = BarangMasuk::with('barang')
+                    ->whereDate('tanggal_masuk', '>=', $startDate)
+                    ->whereDate('tanggal_masuk', '<=', $endDate)
+                    ->get()
+                    ->map(function ($item) {
+                        $item->jenis_transaksi = 'Masuk';
+                        $item->tanggal = $item->tanggal_masuk;
+                        return $item;
+                    });
+            } catch (\Exception $e) {
+                Log::warning('LaporanController::refresh gagal mengambil data masuk: ' . $e->getMessage());
+                $dataMasuk = collect();
+            }
+        } else {
+            $dataMasuk = collect();
+        }
+
+        // Ambil data keluar
+        if (Schema::hasTable('barang_keluar')) {
+            try {
+                $dataKeluar = BarangKeluar::with('barang')
+                    ->whereDate('tanggal_keluar', '>=', $startDate)
+                    ->whereDate('tanggal_keluar', '<=', $endDate)
+                    ->get()
+                    ->map(function ($item) {
+                        $item->jenis_transaksi = 'Keluar';
+                        $item->tanggal = $item->tanggal_keluar;
+                        return $item;
+                    });
+            } catch (\Exception $e) {
+                Log::warning('LaporanController::refresh gagal mengambil data keluar: ' . $e->getMessage());
+                $dataKeluar = collect();
+            }
+        } else {
+            $dataKeluar = collect();
+        }
+
+        $laporan = $dataMasuk->merge($dataKeluar)->sortByDesc('tanggal')->values();
+
+        // Render partial blade yang hanya berisi <tbody> rows
+        return view('partials.laporan_table_body', ['laporan' => $laporan]);
+    }
+
+    /**
+     * Tampilan laporan untuk barang MASUK saja (filter tanggal + keterangan)
+     */
+    public function masuk(Request $request)
+    {
+        try {
+            $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : Carbon::now()->startOfMonth()->format('Y-m-d');
+        } catch (\Exception $e) {
+            $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        }
+
+        try {
+            $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        } catch (\Exception $e) {
+            $endDate = Carbon::now()->format('Y-m-d');
+        }
+
+        if (!\Illuminate\Support\Facades\Schema::hasTable('barang_masuk')) {
+            $masuk = collect();
+        } else {
+            try {
+                $masuk = BarangMasuk::with('barang')
+                    ->whereDate('tanggal_masuk', '>=', $startDate)
+                    ->whereDate('tanggal_masuk', '<=', $endDate)
+                    ->orderBy('tanggal_masuk', 'desc')
+                    ->get()
+                    ->map(function ($item) {
+                        $item->jenis_transaksi = 'Masuk';
+                        $item->tanggal = $item->tanggal_masuk;
+                        return $item;
+                    });
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('LaporanController::masuk gagal mengambil data: ' . $e->getMessage());
+                $masuk = collect();
+            }
+        }
+
+        return view('laporan_masuk', [
+            'masuk' => $masuk,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
+    }
+
+    /**
+     * Export CSV untuk laporan barang masuk
+     */
+    public function masukExport(Request $request)
+    {
+        try {
+            $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : Carbon::now()->startOfMonth()->format('Y-m-d');
+        } catch (\Exception $e) {
+            $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        }
+
+        try {
+            $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        } catch (\Exception $e) {
+            $endDate = Carbon::now()->format('Y-m-d');
+        }
+
+        if (!\Illuminate\Support\Facades\Schema::hasTable('barang_masuk')) {
+            return redirect()->route('laporan.masuk')->with('error', 'Tabel barang_masuk belum tersedia.');
+        }
+
+        $query = BarangMasuk::with('barang')
+            ->whereDate('tanggal_masuk', '>=', $startDate)
+            ->whereDate('tanggal_masuk', '<=', $endDate)
+            ->orderBy('tanggal_masuk', 'desc');
+
+        $fileName = 'laporan_barang_masuk_' . $startDate . '_to_' . $endDate . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$fileName\"",
+        ];
+
+        $callback = function() use ($query) {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Tanggal', 'Nama Barang', 'Kategori', 'Jumlah', 'Keterangan']);
+
+            foreach ($query->cursor() as $row) {
+                $tanggal = $row->tanggal_masuk;
+                $nama = optional($row->barang)->NamaProduk ?? 'Barang Dihapus';
+                $kategori = optional($row->barang)->Kategori ?? '-';
+                $jumlah = $row->jumlah;
+                $keterangan = $row->keterangan ?? '';
+
+                fputcsv($output, [$tanggal, $nama, $kategori, $jumlah, $keterangan]);
+            }
+
+            fclose($output);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

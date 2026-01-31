@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\barang;
 use App\Models\BarangKeluar;
+use App\Models\BarangMasuk; // catatan barang masuk
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -24,13 +25,27 @@ class BarangController extends Controller
             'Stok'       => 'required|integer'
         ]);
 
-        barang::create([
+        $new = barang::create([
             'NamaProduk' => $request->NamaProduk,
             'Kategori'   => $request->Kategori,
             'HargaBeli'  => $request->HargaBeli,
             'HargaJual'  => $request->HargaJual,
             'Stok'       => $request->Stok   
         ]);
+
+        // Jika ada stok awal (>0) dan tabel `barang_masuk` tersedia, simpan catatan masuk
+        if ($new->Stok > 0 && \Illuminate\Support\Facades\Schema::hasTable('barang_masuk')) {
+            try {
+                BarangMasuk::create([
+                    'barang_id' => $new->id,
+                    'jumlah' => $new->Stok,
+                    'tanggal_masuk' => Carbon::now(),
+                    'keterangan' => 'Stok awal saat pembuatan produk'
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal mencatat barang_masuk (store): ' . $e->getMessage());
+            }
+        }
 
         return redirect('/barang')->with('success', 'Barang Berhasil Ditambahkan');
     }
@@ -46,13 +61,31 @@ class BarangController extends Controller
         ]);
 
         $barang = barang::findOrFail($id);
+
+        $oldStok = $barang->Stok;
+        $newStok = (int) $request->Stok;
+
         $barang->update([
             'NamaProduk' => $request->NamaProduk,
             'Kategori'   => $request->Kategori,
             'HargaBeli'  => $request->HargaBeli,
             'HargaJual'  => $request->HargaJual,
-            'Stok'       => $request->Stok
+            'Stok'       => $newStok
         ]);
+
+        // Jika stok bertambah, catat sebagai BarangMasuk (jika tabel ada)
+        if ($newStok > $oldStok && \Illuminate\Support\Facades\Schema::hasTable('barang_masuk')) {
+            try {
+                BarangMasuk::create([
+                    'barang_id' => $barang->id,
+                    'jumlah' => $newStok - $oldStok,
+                    'tanggal_masuk' => Carbon::now(),
+                    'keterangan' => 'Penambahan stok via edit produk'
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal mencatat barang_masuk (update): ' . $e->getMessage());
+            }
+        }
 
         return redirect('/barang')->with('success', 'Barang Berhasil Diupdate');
     }
@@ -195,5 +228,37 @@ class BarangController extends Controller
         }
 
         return redirect('/produk')->with('success', 'Transaksi Berhasil: Stok ' . $item->NamaProduk . ' telah dikurangi.');
+    }
+
+    /**
+     * Catat Barang Masuk (tambah stok) via modal/form
+     */
+    public function masukStore(Request $request)
+    {
+        $request->validate([
+            'barang_id' => 'required|exists:barang,id',
+            'jumlah' => 'required|integer|min:1',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        $item = barang::findOrFail($request->barang_id);
+
+        // Tambah stok
+        $item->Stok = $item->Stok + (int) $request->jumlah;
+        $item->save();
+
+        // Simpan catatan barang_masuk
+        try {
+            BarangMasuk::create([
+                'barang_id' => $item->id,
+                'jumlah' => $request->jumlah,
+                'tanggal_masuk' => Carbon::now(),
+                'keterangan' => $request->keterangan ?? null,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal mencatat barang_masuk (masukStore): ' . $e->getMessage());
+        }
+
+        return redirect('/produk')->with('success', 'Stok ' . $item->NamaProduk . ' berhasil ditambahkan.');
     }
 }
