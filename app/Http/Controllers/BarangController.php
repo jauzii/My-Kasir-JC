@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Barang;
+use App\Models\barang;
 use App\Models\BarangKeluar;
 use App\Models\BarangMasuk; // catatan barang masuk
 use Carbon\Carbon;
@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class BarangController extends Controller
 {
     public function index() {
-        $barang = Barang::all();
+        $barang = barang::all();
         return view('barang', compact('barang'));
     }
 
@@ -25,7 +25,7 @@ class BarangController extends Controller
             'Stok'       => 'required|integer'
         ]);
 
-        $new = Barang::create([
+        $new = barang::create([
             'NamaProduk' => $request->NamaProduk,
             'Kategori'   => $request->Kategori,
             'HargaBeli'  => $request->HargaBeli,
@@ -60,7 +60,7 @@ class BarangController extends Controller
             'Stok'       => 'required|integer'
         ]);
 
-        $barang = Barang::findOrFail($id);
+        $barang = barang::findOrFail($id);
 
         $oldStok = $barang->Stok;
         $newStok = (int) $request->Stok;
@@ -92,7 +92,7 @@ class BarangController extends Controller
 
     public function destroy($id)
     {
-        $barang = Barang::findOrFail($id);
+        $barang = barang::findOrFail($id);
         $barang->delete();
 
         return redirect('/barang')->with('success', 'Barang Berhasil Dihapus');
@@ -102,7 +102,7 @@ class BarangController extends Controller
 
     public function keluarIndex()
     {
-        $barang = Barang::all(); 
+        $barang = barang::all(); 
         return view('produk', compact('barang'));
     }
 
@@ -203,7 +203,7 @@ class BarangController extends Controller
             'tujuan'    => 'required|string|max:255'
         ]);
 
-        $item = Barang::findOrFail($request->barang_id);
+        $item = barang::findOrFail($request->barang_id);
 
         // Cek kecukupan stok sebelum dikurangi
         if ($item->Stok < $request->jumlah) {
@@ -241,7 +241,7 @@ class BarangController extends Controller
             'keterangan' => 'nullable|string|max:255',
         ]);
 
-        $item = Barang::findOrFail($request->barang_id);
+        $item = barang::findOrFail($request->barang_id);
 
         // Tambah stok
         $item->Stok = $item->Stok + (int) $request->jumlah;

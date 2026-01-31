@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Barang extends Model
+class barang extends Model
 {
     use HasFactory;
 
@@ -15,6 +15,10 @@ class Barang extends Model
      */
     protected $table = 'barang';
 
+    /**
+     * Daftar kolom yang boleh diisi secara massal.
+     * Kolom 'Updated' tetap ada namun kita nonaktifkan timestamps otomatis.
+     */
     protected $fillable = [
         'NamaProduk',
         'Kategori',
