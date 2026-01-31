@@ -15,10 +15,6 @@ class Barang extends Model
      */
     protected $table = 'barang';
 
-    /**
-     * Daftar kolom yang boleh diisi secara massal.
-     * Kolom 'Updated' tetap ada namun kita nonaktifkan timestamps otomatis.
-     */
     protected $fillable = [
         'NamaProduk',
         'Kategori',
